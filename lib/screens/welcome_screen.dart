@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart'; // Import GoogleSignIn
 import 'chat_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login_screen.dart';
-import 'registration_screen.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flashchat/components/rounded_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'registration_screen.dart';
+import 'login_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   static String id = 'welcome_screen';
@@ -44,7 +44,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   Future<void> signInWithGoogle() async {
     try {
-      // Sign in with Google
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser != null) {
         final GoogleSignInAuthentication googleAuth =
@@ -57,24 +56,52 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             await FirebaseAuth.instance.signInWithCredential(credential);
         final user = userCredential.user;
 
-        // Fetch user profile data
         final userData = {
           'email': user!.email,
           'user_name': user.displayName,
-          'profile_image': user.photoURL, // Profile picture URL
+          'profile_image': user.photoURL,
         };
 
-        // Add user profile data to Firestore
         await FirebaseFirestore.instance
             .collection('userDetails')
             .doc(user.uid)
             .set(userData);
 
-        // Navigate to ChatScreen
         Navigator.pushNamed(context, ChatScreen.id);
       }
     } catch (e) {
       print('Error signing in with Google: $e');
+    }
+  }
+
+  Future<void> signInWithSMS(String phoneNumber) async {
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+          Navigator.pushNamed(context, ChatScreen.id);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          print('Error verifying phone number: $e');
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpScreen(
+                verificationId: verificationId,
+                resendToken: resendToken,
+              ),
+            ),
+          );
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+        timeout: Duration(seconds: 60),
+      );
+    } catch (e) {
+      print('Error signing in with SMS: $e');
     }
   }
 
@@ -114,8 +141,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           color: Colors.black,
                           fontWeight: FontWeight.w900,
                         ),
-                        speed: Duration(
-                            milliseconds: 200), // Adjust the speed as needed
+                        speed: Duration(milliseconds: 200),
                       ),
                     ],
                   ),
@@ -139,22 +165,34 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 },
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  MaterialButton(
-                    onPressed: signInWithGoogle,
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          'images/google.jpeg',
-                          height: 50, // Set the desired height
-                          width: 50, // Set the desired width
-                        ),
-                        Text(
-                          'Sign-in with Google',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      ],
+                  Expanded(
+                    child: RoundedButton(
+                      title: 'Sign-in with SMS',
+                      colour: Colors.black54,
+                      onPressed: () {
+                        signInWithSMS('+919701192166');
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: MaterialButton(
+                      onPressed: signInWithGoogle,
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'images/google.jpeg',
+                            height: 50,
+                            width: 50,
+                          ),
+                          Text(
+                            'Sign-in with Google',
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -162,6 +200,74 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class OtpScreen extends StatefulWidget {
+  final String verificationId;
+  final int? resendToken;
+
+  OtpScreen({
+    required this.verificationId,
+    required this.resendToken,
+  });
+
+  @override
+  _OtpScreenState createState() => _OtpScreenState();
+}
+
+class _OtpScreenState extends State<OtpScreen> {
+  late TextEditingController otpController;
+
+  @override
+  void initState() {
+    super.initState();
+    otpController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    otpController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Enter OTP'),
+      ),
+      body: Column(
+        children: [
+          TextField(
+            controller: otpController,
+            decoration: InputDecoration(
+              hintText: 'Enter OTP',
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                String enteredOTP = otpController.text;
+                if (enteredOTP.isNotEmpty) {
+                  PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                    verificationId: widget.verificationId,
+                    smsCode: enteredOTP,
+                  );
+                  await FirebaseAuth.instance.signInWithCredential(credential);
+
+                  Navigator.pushNamed(context, ChatScreen.id);
+                } else {}
+              } catch (e) {
+                print('Error verifying OTP: $e');
+              }
+            },
+            child: Text('Verify OTP'),
+          ),
+        ],
       ),
     );
   }

@@ -43,8 +43,7 @@ class GroupDetails extends StatelessWidget {
               return Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(
-                        'images/pink.png'), // Replace with your image asset
+                    image: AssetImage('images/pink.png'),
                     fit: BoxFit.cover,
                   ),
                 ),

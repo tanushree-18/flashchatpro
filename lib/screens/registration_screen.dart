@@ -27,8 +27,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   //String phoneNumber = '';
   XFile? _imageFile;
   String? _imageUrl;
-  late bool profileUpdated = false; // Initialize with default value
-  late String? imageUrl; // Initialize with null
+  late bool profileUpdated = false;
+  late String? imageUrl;
 
   Future<void> _selectImage() async {
     final pickedFile =
@@ -126,7 +126,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         if (newUser != null) {
                           await saveUserDetails(newUser.user!.uid);
                           Navigator.pushNamed(context, ChatScreen.id);
-                          // Add FocusScope here to remove focus from text fields
                           FocusScope.of(context).requestFocus(new FocusNode());
                         }
                         setState(() {
@@ -152,7 +151,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         'email': email,
         'user_name': userName,
         //'phno': phoneNumber,
-        'profile_image': _imageUrl, // Store the image URL in Firestore
+        'profile_image': _imageUrl,
       });
       print('User details saved to Firestore');
     } catch (e) {

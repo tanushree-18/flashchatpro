@@ -17,7 +17,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   Stream<QuerySnapshot<Object?>>? stream;
-  String? userProfileImageUrl; // Variable to store user profile image URL
+  String? userProfileImageUrl;
 
   @override
   void initState() {
@@ -33,12 +33,10 @@ class _ChatScreenState extends State<ChatScreen> {
     if (user != null) {
       loggedInUser = user;
       print(loggedInUser!.email);
-      // Fetch user profile image URL from Firestore
       fetchUserProfileImageUrl();
     }
   }
 
-  // Function to fetch user profile image URL from Firestore
   void fetchUserProfileImageUrl() async {
     try {
       final snapshot = await _firestore
@@ -96,7 +94,7 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('images/doodle.png'), // Add your background image
+            image: AssetImage('reg.png'),
             fit: BoxFit.cover,
           ),
         ),

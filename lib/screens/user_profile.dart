@@ -75,8 +75,7 @@ class _UserProfileState extends State<UserProfile> {
               height: MediaQuery.of(context).size.height,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage(
-                      'images/pink.png'), // Replace with your image asset
+                  image: AssetImage('images/pink.png'),
                   fit: BoxFit.fill,
                 ),
               ),
@@ -86,7 +85,6 @@ class _UserProfileState extends State<UserProfile> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 8.0),
-                    // Display the image from Firebase Storage
                     if (profileImageUrl != null)
                       ClipOval(
                         child: CircleAvatar(

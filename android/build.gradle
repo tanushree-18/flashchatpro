@@ -8,6 +8,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.gms.google-services4.4.1"
+        implementation 'org.codehaus.groovy:groovy:3.0.10'
     }
 }
 
